@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 class Producto {
   String nombre;
@@ -7,14 +8,32 @@ class Producto {
 
   Producto({required this.nombre, required this.precio, required this.stock});
 
+  // Convertir a Map para JSON
+  Map<String, dynamic> toJson() => {
+        'nombre': nombre,
+        'precio': precio,
+        'stock': stock,
+      };
+
+  // Crear desde Map (JSON)
+  factory Producto.fromJson(Map<String, dynamic> json) {
+    return Producto(
+      nombre: json['nombre'],
+      precio: json['precio'],
+      stock: json['stock'],
+    );
+  }
+
   @override
   String toString() {
     return 'Nombre: $nombre, Precio: $precio, Stock: $stock';
   }
 }
 
+const String ARCHIVO_DATOS = 'productos.json';
+
 void main() {
-  List<Producto> productos = [];
+  List<Producto> productos = cargarDatos();
 
   print('===== BIENVENIDO AL CRUD DE CATALOGO DE PRODUCTOS =====');
 
@@ -36,15 +55,18 @@ void main() {
     switch (opcion) {
       case 1:
         agregar(productos);
+        guardarDatos(productos);
         break;
       case 2:
         visualizar(productos);
         break;
       case 3:
         actualizar(productos);
+        guardarDatos(productos);
         break;
       case 4:
         eliminar(productos);
+        guardarDatos(productos);
         break;
       case 5:
         continuar = false;
@@ -53,6 +75,30 @@ void main() {
       default:
         print('Opción no válida. Elige entre 1 y 5.');
     }
+  }
+}
+
+// Persistencia
+void guardarDatos(List<Producto> productos) {
+  try {
+    final file = File(ARCHIVO_DATOS);
+    final jsonString = jsonEncode(productos.map((p) => p.toJson()).toList());
+    file.writeAsStringSync(jsonString);
+  } catch (e) {
+    print('Error al guardar datos: $e');
+  }
+}
+
+List<Producto> cargarDatos() {
+  try {
+    final file = File(ARCHIVO_DATOS);
+    if (!file.existsSync()) return [];
+    final jsonString = file.readAsStringSync();
+    final List<dynamic> jsonData = jsonDecode(jsonString);
+    return jsonData.map((item) => Producto.fromJson(item)).toList();
+  } catch (e) {
+    print('Error al cargar datos: $e');
+    return [];
   }
 }
 
