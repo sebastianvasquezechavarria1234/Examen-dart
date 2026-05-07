@@ -1,7 +1,20 @@
 import 'dart:io';
 
+class Producto {
+  String nombre;
+  int precio;
+  int stock;
+
+  Producto({required this.nombre, required this.precio, required this.stock});
+
+  @override
+  String toString() {
+    return 'Nombre: $nombre, Precio: $precio, Stock: $stock';
+  }
+}
+
 void main() {
-  List<Map<String, dynamic>> productos = [];
+  List<Producto> productos = [];
 
   print('===== BIENVENIDO AL CRUD DE CATALOGO DE PRODUCTOS =====');
 
@@ -85,32 +98,31 @@ int leerIndiceValido(List productos, String prompt) {
   }
 }
 
-void agregar(List<Map<String, dynamic>> productos) {
+void agregar(List<Producto> productos) {
   print('');
   print('--- Crear producto ---');
   String nombre = leerCadenaNoVacia('Nombre del producto: ');
   int precio = leerEnteroNoNegativo('Precio del producto (entero): ');
   int stock = leerEnteroNoNegativo('Cantidad disponible (entero): ');
 
-  productos.add({'nombre': nombre, 'precio': precio, 'stock': stock});
+  productos.add(Producto(nombre: nombre, precio: precio, stock: stock));
   print('Producto registrado correctamente.');
   print('');
 }
 
-void visualizar(List<Map<String, dynamic>> productos) {
+void visualizar(List<Producto> productos) {
   print('--- Lista de productos ---');
   if (productos.isEmpty) {
     print('No hay productos registrados.');
     return;
   }
   for (int i = 0; i < productos.length; i++) {
-    print(
-        '$i: Nombre: ${productos[i]['nombre']}, Precio: ${productos[i]['precio']}, Stock: ${productos[i]['stock']}');
+    print('$i: ${productos[i]}');
   }
   print('');
 }
 
-void actualizar(List<Map<String, dynamic>> productos) {
+void actualizar(List<Producto> productos) {
   if (productos.isEmpty) {
     print('No hay productos para editar.');
     return;
@@ -121,40 +133,34 @@ void actualizar(List<Map<String, dynamic>> productos) {
 
   var producto = productos[indice];
 
-  // Nombre: si el usuario deja vacío, mantenemos el anterior
-  stdout.write('Nuevo nombre del producto (enter para mantener "${producto['nombre']}"): ');
+  // Nombre
+  stdout.write('Nuevo nombre del producto (enter para mantener "${producto.nombre}"): ');
   String inputNombre = stdin.readLineSync() ?? '';
-  String nombre = inputNombre.trim().isEmpty ? producto['nombre'] : inputNombre.trim();
+  if (inputNombre.trim().isNotEmpty) {
+    producto.nombre = inputNombre.trim();
+  }
 
-  // Precio: si el usuario deja vacío, mantenemos el anterior.
-  // Si escribe algo y no es entero válido, mantenemos el anterior (sin bucles).
-  stdout.write('Nuevo precio del producto (entero) (enter para mantener ${producto['precio']}): ');
+  // Precio
+  stdout.write('Nuevo precio del producto (entero) (enter para mantener ${producto.precio}): ');
   String inputPrecio = stdin.readLineSync() ?? '';
-  int precio;
-  if (inputPrecio.trim().isEmpty) {
-    precio = producto['precio'];
-  } else {
+  if (inputPrecio.trim().isNotEmpty) {
     int? parsed = int.tryParse(inputPrecio);
-    precio = parsed ?? producto['precio'];
+    if (parsed != null) producto.precio = parsed;
   }
 
-  // Stock: igual que precio
-  stdout.write('Nueva cantidad disponible (entero) (enter para mantener ${producto['stock']}): ');
+  // Stock
+  stdout.write('Nueva cantidad disponible (entero) (enter para mantener ${producto.stock}): ');
   String inputStock = stdin.readLineSync() ?? '';
-  int stock;
-  if (inputStock.trim().isEmpty) {
-    stock = producto['stock'];
-  } else {
+  if (inputStock.trim().isNotEmpty) {
     int? parsed = int.tryParse(inputStock);
-    stock = parsed ?? producto['stock'];
+    if (parsed != null) producto.stock = parsed;
   }
 
-  productos[indice] = {'nombre': nombre, 'precio': precio, 'stock': stock};
   print('El producto se actualizó correctamente.');
   print('');
 }
 
-void eliminar(List<Map<String, dynamic>> productos) {
+void eliminar(List<Producto> productos) {
   if (productos.isEmpty) {
     print('No hay productos para eliminar.');
     return;
@@ -163,7 +169,7 @@ void eliminar(List<Map<String, dynamic>> productos) {
   visualizar(productos);
   int indice = leerIndiceValido(productos, 'Ingresa el índice del producto a eliminar: ');
 
-  stdout.write('¿Seguro que deseas eliminar el producto ${productos[indice]['nombre']}? (s/n): ');
+  stdout.write('¿Seguro que deseas eliminar el producto ${productos[indice].nombre}? (s/n): ');
   String respuesta = (stdin.readLineSync() ?? '').toLowerCase();
   if (respuesta == 's' || respuesta == 'si') {
     productos.removeAt(indice);
